@@ -1,0 +1,6 @@
+-   id: prepare-commit-msg
+    name: prepare commit message
+    description: Formatter Helper for your commit message
+    entry: prepare-commit-msg
+    language: python
+    stages: [prepare-commit-msg]
