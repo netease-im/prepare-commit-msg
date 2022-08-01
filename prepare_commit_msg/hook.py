@@ -3,7 +3,6 @@ from __future__ import annotations
 import argparse
 import itertools
 import re
-import sys
 from typing import Sequence
 
 from prepare_commit_msg.template import get_rendered_template

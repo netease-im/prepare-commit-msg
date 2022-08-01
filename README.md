@@ -31,6 +31,8 @@ repos:
     rev: v0.0.1
     hooks:
       - id: prepare-commit-msg
+        name: Prepare Commit Message
+        description: Add statistics and a message template to the commit message.
         stages: [ prepare-commit-msg ]
         args: [
           -t, prepare_commit_msg_prepend.j2,
@@ -38,3 +40,43 @@ repos:
           -p, '(?<=feature/).*', -p, '(?<=release/).*'
         ]
 ```
+
+or if having the package installed via pip:
+
+```yaml
+# .pre-commit-config.yaml file
+default_install_hook_types:
+  - pre-commit
+  - prepare-commit-msg
+repos:
+  - repo: local
+    hooks:
+      - id: prepare-commit-msg
+        name: Prepare Commit Message
+        description: Add statistics and a message template to the commit message.
+        stages: [ prepare-commit-msg ]
+        entry: prepare-commit-msg
+        args: [
+          -t, prepare_commit_msg_prepend.j2,
+          -b, main, -b, master, -b, test, -b develop,
+          -p, '(?<=feature/).*', -p, '(?<=release/).*'
+        ]
+```
+
+## Templating
+
+Some example can be seen in package:
+
+```
+{{ original | join('') | trim() }}
+
+Relates: #{{ ticket }}
+
+{{ rest | join('') }}
+```
+
+The variables passed currently to templates are:
+* ticket: matched part of the patterns given as parameter
+* original: recognised original message, if any
+* rest: rest of the prepared commit file presented by git, removing `original`
+* full: complete prepared commit file presented by git
