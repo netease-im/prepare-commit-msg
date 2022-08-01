@@ -1,0 +1,23 @@
+# Please enter the commit message for your changes. Lines starting
+# with '#' will be ignored, and an empty message aborts the commit.
+#
+# On branch feature/test
+# Changes to be committed:
+#       modified:   .pre-commit-config.yaml
+#
+# ------------------------ >8 ------------------------
+# Do not modify or remove the line above.
+# Everything below it will be ignored.
+diff --git a/.pre-commit-config.yaml b/.pre-commit-config.yaml
+index 2a6622f..02f6332 100644
+--- a/.pre-commit-config.yaml
++++ b/.pre-commit-config.yaml
+@@ -1,6 +1,6 @@
+ default_install_hook_types:
+--   pre-commit
+--   prepare-commit-msg
++- pre-commit
++- prepare-commit-msg
+ repos:
+   #-   repo: https://github.com/davidmpaz/pre-commit-hooks
+   #  rev: prepare-commit

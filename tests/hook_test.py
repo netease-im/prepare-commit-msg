@@ -24,33 +24,38 @@ def test_current_branch(temp_git_dir):
 TESTS = (
     (
         b'',
-        b'[1.0.0] ',
+        f'[1.0.0] {linesep}{linesep}'.encode(),
         'release/1.0.0',  # but this should
         'prepare_commit_msg_prepend.j2',
+        'message',
     ),
     (
         b'',
-        b'[TT-01] ',
+        f'[TT-01] {linesep}{linesep}'.encode(),
         'feature/TT-01',
         'prepare_commit_msg_prepend.j2',
+        'message',
     ),
     (
         b'[TT-02] Some message',
         b'[TT-02] Some message',
         'feature/TT-02',
         'prepare_commit_msg_prepend.j2',
+        'commit',
     ),
     (
         b'Initial message',
-        b'[TT-03] Initial message',
+        f'[TT-03] Initial message{linesep}{linesep}'.encode(),
         'feature/TT-03',
         'prepare_commit_msg_prepend.j2',
+        'message',
     ),
     (
         b'',
         f'{linesep}{linesep}Relates: #AA-01{linesep}{linesep}'.encode(),
         'feature/AA-01',
         'prepare_commit_msg_append.j2',
+        'message',
     ),
     (
         b'Initial message',
@@ -58,16 +63,17 @@ TESTS = (
         .encode(),
         'feature/AA-02',
         'prepare_commit_msg_append.j2',
+        'message',
     ),
 )
 
 
 @pytest.mark.parametrize(
-    ('input_s', 'expected_val', 'branch_name', 'template'),
+    ('input_s', 'expected_val', 'branch_name', 'template', 'source'),
     TESTS,
 )
 def test_update_commit_file(
-        input_s, expected_val, branch_name, template,
+        input_s, expected_val, branch_name, template, source,
         temp_git_dir,
 ):
     with temp_git_dir.as_cwd():
@@ -75,7 +81,7 @@ def test_update_commit_file(
         path.write_binary(input_s)
         parts = branch_name.split('/')
         ticket = str(parts[1]) if len(parts) > 1 else str(parts[0])
-        update_commit_file(path, get_template(template), ticket)
+        update_commit_file(path, get_template(template), ticket, source)
 
         assert path.read_binary() == expected_val
 
@@ -84,17 +90,17 @@ def test_update_commit_file_os_error(temp_git_dir):
     with temp_git_dir.as_cwd():
         path = temp_git_dir.join('COMMIT_EDITMSG')
         ticket = 'TICKET-01'
-        result = update_commit_file(path, '', ticket)
+        result = update_commit_file(path, '', ticket, 'message')
 
         assert result == 1
 
 
 @pytest.mark.parametrize(
-    ('input_s', 'expected_val', 'branch_name', 'template'),
+    ('input_s', 'expected_val', 'branch_name', 'template', 'source'),
     TESTS,
 )
 def test_main(
-        input_s, expected_val, branch_name, template,
+        input_s, expected_val, branch_name, template, source,
         temp_git_dir,
 ):
     with temp_git_dir.as_cwd():
@@ -109,6 +115,7 @@ def test_main(
                 '-p', '(?<=feature/).*',
                 '-p', '(?<=release/).*',
                 str(path),
+                source,
             ],
         ) == 0
         assert path.read_binary() == expected_val
@@ -120,12 +127,14 @@ TESTS_TEMPLATES = (
         b'',
         'test',  # this should not trigger anything
         'prepare_commit_msg_prepend.j2',
+        'message',
     ),
     (
         b'',
         b'',
         'master',  # this should not trigger anything
         'prepare_commit_msg_prepend.j2',
+        'message',
     ),
     (
         f'Initial Message{linesep}{linesep}# Git commented{linesep}# '
@@ -134,6 +143,7 @@ TESTS_TEMPLATES = (
         f'output simulated'.encode(),
         'release/1.0.0',  # but this should
         'prepare_commit_msg_prepend.j2',
+        'message',
     ),
     (
         f'Initial Message{linesep}# Git commented{linesep}# output '
@@ -142,16 +152,17 @@ TESTS_TEMPLATES = (
         f'# Git commented{linesep}# output simulated'.encode(),
         'release/1.0.0',  # but this should
         'prepare_commit_msg_append.j2',
+        'message',
     ),
 )
 
 
 @pytest.mark.parametrize(
-    ('input_s', 'expected_val', 'branch_name', 'template'),
+    ('input_s', 'expected_val', 'branch_name', 'template', 'source'),
     TESTS_TEMPLATES,
 )
 def test_main_separating_content(
-        input_s, expected_val, branch_name, template,
+        input_s, expected_val, branch_name, template, source,
         temp_git_dir,
 ):
     with temp_git_dir.as_cwd():
@@ -165,6 +176,7 @@ def test_main_separating_content(
                 '-t', template,
                 '-p', '(?<=release/).*',
                 str(path),
+                source,
             ],
         ) == 0
         assert path.read_binary() == expected_val

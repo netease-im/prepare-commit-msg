@@ -11,9 +11,9 @@ from prepare_commit_msg.template import get_template
 
 def test_get_template():
     template = get_template('prepare_commit_msg_append.j2')
-    assert 'original_msg' in template
+    assert 'original' in template
     assert 'Relates' in template
-    assert 'commented' in template
+    assert 'rest' in template
 
 
 def test_get_template_fail():
@@ -28,9 +28,9 @@ def test_get_template_absolute_path():
     )
 
     template = get_template(path)
-    assert 'original_msg' in template
+    assert 'original' in template
     assert 'Relates' in template
-    assert 'commented' in template
+    assert 'rest' in template
 
 
 def test_get_rendered_template():
@@ -41,8 +41,8 @@ def test_get_rendered_template():
     text = get_rendered_template(
         path, {
             'ticket': ticket,
-            'original_msg': initial,
-            'commented': commented,
+            'original': initial,
+            'rest': commented,
         },
     )
 

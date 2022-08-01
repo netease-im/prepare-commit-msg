@@ -1,1 +1,3 @@
-[{{ ticket }}] {{ content | join('') }}
+[{{ ticket }}] {{ original | join('') | trim() }}
+
+{{ rest | join('') }}

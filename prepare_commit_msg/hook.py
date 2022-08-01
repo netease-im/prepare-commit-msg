@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import argparse
+import itertools
 import re
+import sys
 from typing import Sequence
 
 from prepare_commit_msg.template import get_rendered_template
@@ -41,25 +43,40 @@ def update_commit_file(
         commit_msg_file: str,
         template: str,
         ticket: str,
+        source: str | None,
 ) -> int:
     try:
         with open(commit_msg_file) as f:
             data = f.readlines()
 
-        commented = list(filter(lambda line: line.startswith('#'), data))
-        original = list(filter(lambda line: not line.startswith('#'), data))
-        data_as_str = ''.join([item for item in data])
-        # if message already contain ticket number means
-        # it is under git commit --amend or rebase or alike
-        # where message was already set in the past
-        if ticket in data_as_str:
+        original = list(
+            itertools.takewhile(
+                lambda line: not line.startswith('#'), data,
+            ),
+        )
+
+        rest = data[len(original):]
+
+        # As docs states: ...the source of the commit message, and can be:
+        # * message (if a -m or -F option was given);
+        # * template (if a -t option was given or the configuration option
+        #   commit.template is set);
+        # * merge (if the commit is a merge or a .git/MERGE_MSG file exists);
+        # * squash (if a .git/SQUASH_MSG file exists); or
+        # * commit, followed by a commit object name (if a -c, -C or --amend
+        #   option was given).
+        should_update_file = (
+            # per design only in those 3 cases we update message
+            source == 'message' or source == 'merge' or source is None
+        )
+        if not should_update_file:
             return 0
 
         variables = {
             'ticket': ticket,
-            'content': data_as_str,
-            'commented': commented,
-            'original_msg': original,
+            'original': original,
+            'rest': rest,
+            'full': data,
         }
 
         content = get_rendered_template(
@@ -95,9 +112,11 @@ def main(argv: Sequence[str] | None = None) -> int:
         # checked allowed branches
         return 0
 
-    commit_file = args.COMMIT_MSG_FILE[0]
+    extra_args = args.COMMIT_MSG_FILE
+    commit_file = extra_args[0]
+    source = None if len(extra_args) <= 1 else extra_args[1]
     template = get_template(args.template)
-    return update_commit_file(commit_file, template, matches[0])
+    return update_commit_file(commit_file, template, matches[0], source)
 
 
 if __name__ == '__main__':
