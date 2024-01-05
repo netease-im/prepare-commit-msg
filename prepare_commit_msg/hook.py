@@ -20,7 +20,7 @@ def _configure_args(
         parser: argparse.ArgumentParser,
 ) -> argparse.ArgumentParser:
     parser.add_argument(
-        '-t', '--template', default='prepare_commit_msg_append.j2',
+        '-t', '--template', default='prepare_commit_msg_overmind.j2',
         help='Template to use for the commit message. Absolute file name or'
              'the name of one the bundled in the package template directory',
     )
@@ -29,7 +29,7 @@ def _configure_args(
         help='Branch to skip, may be specified multiple times.',
     )
     parser.add_argument(
-        '-p', '--pattern', action='append', default=['(?<=feature/).*'],
+        '-p', '--pattern', action='append', default=['(OM.+-\d+)'],
         help='RegEx Pattern for recognising Ticket Numbers in branch, '
              'may be specified multiple times.',
     )
@@ -82,6 +82,7 @@ def update_commit_file(
             template=template,
             variables=variables,
         )
+
         with open(commit_msg_file, 'w') as f:
             f.write(content)
 
